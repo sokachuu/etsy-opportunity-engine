@@ -10,7 +10,7 @@ type R={
 };
 type S={keyword:string;marketCount:number;sampled:number;averagePrice:number|null;medianPrice:number|null;averageSignal:number;highSignalCount:number;action:string};
 type A={sampleSize:number;highSignalCount:number;medianPrice:number|null;topTerms:{term:string;count:number}[];motifs:{name:string;count:number}[];directions:{title:string;brief:string}[];interpretation:string[];strongestKeywords:string[]};
-type C={id:string;name:string;keyword:string;evidence:string;visual:string;layout:string;palette:string;typography:string;print:string;differentiation:string};
+type C={id:string;name:string;keyword:string;evidence:string;visual:string;layout:string;palette:string;typography:string;print:string;differentiation:string;imagePrompt:string;negativePrompt:string;printSpecs:string};
 
 const demoSignals:R[]=[
   {listing_id:9101,title:"Vintage Halloween Ghost Pumpkin Tee — retro seasonal collage",sourceKeyword:"vintage halloween shirt",priceUsd:22.4,signalScore:91,signalLabel:"High",tags:["vintage halloween","ghost shirt","pumpkin shirt"],confidence:"Illustrative"},
