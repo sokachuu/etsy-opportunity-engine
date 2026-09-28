@@ -10,3 +10,10 @@
 .conceptrows span{font-size:11px;text-transform:uppercase;letter-spacing:.08em;opacity:.55}
 .conceptrows strong{font-size:13px;line-height:1.4}
 @media(max-width:800px){.conceptgrid{grid-template-columns:1fr}}
+
+.genpack{margin-top:16px;border-top:1px solid var(--line);padding-top:12px}
+.genpack summary{cursor:pointer;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.08em}
+.genpack>div{margin-top:12px}
+.genpack span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.1em;opacity:.55;margin-bottom:5px}
+.genpack p{margin:0;font-size:12px;line-height:1.5}
+.genpack button{margin-top:12px;border:1px solid var(--line);padding:8px 10px;background:transparent;color:inherit;cursor:pointer}
