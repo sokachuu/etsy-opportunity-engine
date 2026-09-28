@@ -136,7 +136,7 @@ export default function Page(){
       </div>
 
       <div className="panel">
-        <div className="head"><div><span className="kicker">02 · PROFIT GATE</span><h2>Can the product carry its costs?</h2></div><div className={profit>=0?"profit good":"profit bad"}>$${profit.toFixed(2)}</div></div>
+        <div className="head"><div><span className="kicker">02 · PROFIT GATE</span><h2>Can the product carry its costs?</h2></div><div className={profit>=0?"profit good":"profit bad"}>${`${profit.toFixed(2)}`}</div></div>
         <div className="fields">
           <Field label="Retail price" value={price} setValue={setPrice}/>
           <Field label="Product cost" value={product} setValue={setProduct}/>
