@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import {analyzeOpportunity} from "../lib/opportunity-analysis.mjs";
+import {generateDesignConcepts} from "../lib/design-concepts.mjs";
 
 const API_KEY=process.env.ETSY_API_KEY;
 if(!API_KEY) throw new Error("ETSY_API_KEY secret is required.");
@@ -62,6 +63,7 @@ const report={
   summaries,
   topSignals:top,
   opportunityAnalysis:analyzeOpportunity(top,summaries),
+  designConcepts:generateDesignConcepts(analyzeOpportunity(top,summaries),top),
   notes:[
     "Public market-signal research only; no private competitor sales or conversion data is inferred.",
     "Official Etsy API only; no Etsy page scraping.",
