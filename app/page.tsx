@@ -10,6 +10,7 @@ type R={
 };
 type S={keyword:string;marketCount:number;sampled:number;averagePrice:number|null;medianPrice:number|null;averageSignal:number;highSignalCount:number;action:string};
 type A={sampleSize:number;highSignalCount:number;medianPrice:number|null;topTerms:{term:string;count:number}[];motifs:{name:string;count:number}[];directions:{title:string;brief:string}[];interpretation:string[];strongestKeywords:string[]};
+type C={id:string;name:string;keyword:string;evidence:string;visual:string;layout:string;palette:string;typography:string;print:string;differentiation:string};
 
 const demoSignals:R[]=[
   {listing_id:9101,title:"Vintage Halloween Ghost Pumpkin Tee — retro seasonal collage",sourceKeyword:"vintage halloween shirt",priceUsd:22.4,signalScore:91,signalLabel:"High",tags:["vintage halloween","ghost shirt","pumpkin shirt"],confidence:"Illustrative"},
@@ -63,7 +64,7 @@ export default function Page(){
   const [kw,setKw]=useState(seeds.join(", "));
   const [rows,setRows]=useState<R[]>(demoSignals);
   const [summaries,setSummaries]=useState<S[]>([]);
-  const [analysis,setAnalysis]=useState<A|null>(null);
+  const [analysis,setAnalysis]=useState<A|null>(null);\n  const [concepts,setConcepts]=useState<C[]>([]);
   const [selected,setSelected]=useState<R|null>(null);
   const [status,setStatus]=useState("Illustrative snapshot · connect Etsy for live data");
   const [sources,setSources]=useState({etsy:false,pinterest:false});
@@ -85,7 +86,7 @@ export default function Page(){
         if((data.topSignals||[]).length){
           setRows(data.topSignals);
           setSummaries(data.summaries||[]);
-          setAnalysis(data.opportunityAnalysis||null);
+          setAnalysis(data.opportunityAnalysis||null);\n      setConcepts(data.designConcepts?.concepts||[]);\n          setConcepts(data.designConcepts?.concepts||[]);
           setStatus("Latest scheduled research snapshot loaded");
         }
       })
@@ -173,7 +174,7 @@ export default function Page(){
 
     <section className="grid2">
       <div className="panel">
-        <span className="kicker">05 · ORIGINAL DESIGN BRIEF</span>
+        <span className="kicker">06 · ORIGINAL DESIGN BRIEF</span>
         <h2>{selected?"Turn the pattern into original art":"Select a reference signal"}</h2>
         {brief?<div className="brief"><b>{selected?.sourceKeyword} · design direction</b><p>{brief.concept}</p>
           {[["Audience cue",brief.audience],["Visual language",brief.visual],["Layout",brief.layout],["Production",brief.production],["Differentiation",brief.differentiation]].map(x=><div className="row" key={x[0]}><span>{x[0]}</span><strong>{x[1]}</strong></div>)}
@@ -182,7 +183,7 @@ export default function Page(){
       </div>
 
       <div className="panel">
-        <span className="kicker">06 · SEASON QUEUE</span>
+        <span className="kicker">07 · SEASON QUEUE</span>
         <h2>Research before the peak</h2>
         <div className="queue">{nextSeasons.map(x=><div className="q" key={x[0]}><div><b>{x[0]}</b><small>{x[1]}</small></div><span>{x[2]}</span></div>)}</div>
         <div className="decision"><b>Publication gate</b><span>1. Demand signal is strong enough</span><span>2. Margin survives realistic fees + shipping</span><span>3. Design is independently created</span><span>4. Listing copy matches the actual product</span></div>
