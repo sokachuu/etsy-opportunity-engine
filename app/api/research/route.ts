@@ -35,10 +35,13 @@ export async function GET(req:NextRequest){
   const raw=req.nextUrl.searchParams.get("keywords")||"halloween shirt";
   const limit=Math.max(5,Math.min(30,Number(req.nextUrl.searchParams.get("limit")||18)));
   const keywords=[...new Set(raw.split(",").map(x=>x.trim().toLowerCase()).filter(Boolean))].slice(0,10);
-  const settled=await Promise.allSettled(keywords.map(k=>etsySearch(k,limit)));\n  const etsyResults=settled.map((x,i)=>x.status==="fulfilled"?x.value:{keyword:keywords[i],ok:false,count:0,results:[]});\n  const pinterest=await pinterestTrending();
+  const settled=await Promise.allSettled(keywords.map(k=>etsySearch(k,limit)));
+  const etsyResults=settled.map((x,i)=>x.status==="fulfilled"?x.value:{keyword:keywords[i],ok:false,count:0,results:[]});
+  const pinterest=await pinterestTrending();
   const flat=etsyResults.flatMap(x=>x.results).sort((a,b)=>b.signalScore-a.signalScore);
   const summaries=etsyResults.map(x=>summarizeKeyword(x.keyword,x.count,x.results)).sort((a,b)=>b.averageSignal-a.averageSignal);
-  const liveCount=etsyResults.filter(x=>x.ok).length;\n  return NextResponse.json({
+  const liveCount=etsyResults.filter(x=>x.ok).length;
+  return NextResponse.json({
     mode:liveCount>0?"live":"setup",
     generatedAt:new Date().toISOString(),
     season:seasonMeta(),
