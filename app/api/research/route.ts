@@ -1,5 +1,6 @@
 import {NextRequest,NextResponse} from "next/server";
 import {aggregateKeywordTokens,enrichListing,summarizeKeyword,seasonMeta} from "../../../lib/scoring.mjs";
+import {analyzeOpportunity} from "../../../lib/opportunity-analysis.mjs";
 
 type Listing={listing_id?:number;title?:string;description?:string;url?:string;price?:{amount?:number;divisor?:number};num_favorers?:number;creation_timestamp?:number;tags?:string[];materials?:string[]};
 
@@ -45,6 +46,7 @@ export async function GET(req:NextRequest){
     keywordSummaries:summaries,
     topSignals:flat.slice(0,40),
     keywordTokenSignals:aggregateKeywordTokens(flat),
+    opportunityAnalysis:analyzeOpportunity(flat,summaries),
     sources:{etsy:liveCount>0,pinterest:pinterest.enabled},
     pinterest:pinterest.items,
     notes:[
