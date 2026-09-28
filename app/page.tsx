@@ -64,7 +64,8 @@ export default function Page(){
   const [kw,setKw]=useState(seeds.join(", "));
   const [rows,setRows]=useState<R[]>(demoSignals);
   const [summaries,setSummaries]=useState<S[]>([]);
-  const [analysis,setAnalysis]=useState<A|null>(null);\n  const [concepts,setConcepts]=useState<C[]>([]);
+  const [analysis,setAnalysis]=useState<A|null>(null);
+  const [concepts,setConcepts]=useState<C[]>([]);
   const [selected,setSelected]=useState<R|null>(null);
   const [status,setStatus]=useState("Illustrative snapshot · connect Etsy for live data");
   const [sources,setSources]=useState({etsy:false,pinterest:false});
@@ -86,7 +87,9 @@ export default function Page(){
         if((data.topSignals||[]).length){
           setRows(data.topSignals);
           setSummaries(data.summaries||[]);
-          setAnalysis(data.opportunityAnalysis||null);\n      setConcepts(data.designConcepts?.concepts||[]);\n          setConcepts(data.designConcepts?.concepts||[]);
+          setAnalysis(data.opportunityAnalysis||null);
+      setConcepts(data.designConcepts?.concepts||[]);
+          setConcepts(data.designConcepts?.concepts||[]);
           setStatus("Latest scheduled research snapshot loaded");
         }
       })
