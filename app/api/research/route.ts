@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { aggregateKeywordTokens, enrichListing, summarizeKeyword, seasonMeta } from "../../../lib/scoring.mjs";
 import { analyzeOpportunity } from "../../../lib/opportunity-analysis.mjs";
+import { generateDesignConcepts } from "../../../lib/design-concepts.mjs";
 
 type Listing = {
   listing_id?: number;
@@ -77,6 +78,7 @@ export async function GET(req: NextRequest) {
     .map(x => summarizeKeyword(x.keyword, x.count, x.results))
     .sort((a, b) => b.averageSignal - a.averageSignal);
   const liveCount = etsyResults.filter(x => x.ok).length;
+  const opportunityAnalysis = analyzeOpportunity(flat, summaries);
 
   return NextResponse.json({
     mode: liveCount > 0 ? "live" : "setup",
@@ -86,7 +88,8 @@ export async function GET(req: NextRequest) {
     keywordSummaries: summaries,
     topSignals: flat.slice(0, 40),
     keywordTokenSignals: aggregateKeywordTokens(flat),
-    opportunityAnalysis: analyzeOpportunity(flat, summaries),
+    opportunityAnalysis,
+    designConcepts: generateDesignConcepts(opportunityAnalysis, flat),
     sources: { etsy: liveCount > 0, pinterest: pinterest.enabled },
     pinterest: pinterest.items,
     notes: [
