@@ -9,6 +9,7 @@ type R={
   recencyScore?:number; priceabilityScore?:number; confidence?:string;
 };
 type S={keyword:string;marketCount:number;sampled:number;averagePrice:number|null;medianPrice:number|null;averageSignal:number;highSignalCount:number;action:string};
+type A={sampleSize:number;highSignalCount:number;medianPrice:number|null;topTerms:{term:string;count:number}[];motifs:{name:string;count:number}[];directions:{title:string;brief:string}[];interpretation:string[];strongestKeywords:string[]};
 
 const demoSignals:R[]=[
   {listing_id:9101,title:"Vintage Halloween Ghost Pumpkin Tee — retro seasonal collage",sourceKeyword:"vintage halloween shirt",priceUsd:22.4,signalScore:91,signalLabel:"High",tags:["vintage halloween","ghost shirt","pumpkin shirt"],confidence:"Illustrative"},
@@ -62,6 +63,7 @@ export default function Page(){
   const [kw,setKw]=useState(seeds.join(", "));
   const [rows,setRows]=useState<R[]>(demoSignals);
   const [summaries,setSummaries]=useState<S[]>([]);
+  const [analysis,setAnalysis]=useState<A|null>(null);
   const [selected,setSelected]=useState<R|null>(null);
   const [status,setStatus]=useState("Illustrative snapshot · connect Etsy for live data");
   const [sources,setSources]=useState({etsy:false,pinterest:false});
@@ -83,6 +85,7 @@ export default function Page(){
         if((data.topSignals||[]).length){
           setRows(data.topSignals);
           setSummaries(data.summaries||[]);
+          setAnalysis(data.opportunityAnalysis||null);
           setStatus("Latest scheduled research snapshot loaded");
         }
       })
@@ -98,6 +101,7 @@ export default function Page(){
       const data=await res.json();
       setRows(data.topSignals||[]);
       setSummaries(data.keywordSummaries||[]);
+      setAnalysis(data.opportunityAnalysis||null);
       setSources(data.sources||{etsy:false,pinterest:false});
       setStatus(data.mode==="live"
         ? "Live Etsy scan complete · "+(data.topSignals?.length||0)+" signals"
