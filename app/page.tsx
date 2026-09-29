@@ -37,11 +37,12 @@ export default function Page(){
 
   useEffect(()=>{
     fetch("/api/snapshot",{cache:"no-store"}).then(r=>r.json()).then((data:Snapshot)=>{
-      setRows(data.topSignals||[]);setSummaries(data.summaries||[]);setAnalysis(data.opportunityAnalysis||null);
+      const signals=data.topSignals||[];
+      setRows(signals);setSummaries(data.summaries||[]);setAnalysis(data.opportunityAnalysis||null);
       setConcepts(data.designConcepts?.concepts||[]);setGeneratedAt(data.generatedAt||null);
-      const live=Boolean((data.topSignals||[]).length);setSources({etsy:live,pinterest:false});
+      const live=signals.length>0;setSources({etsy:live,pinterest:false});
       setStatus(live?"Latest scheduled Etsy snapshot loaded":"No research snapshot is available yet");
-      if((data.topSignals||[]).length)setSelected(data.topSignals[0]);
+      if(signals.length)setSelected(signals[0]);
     }).catch(()=>setStatus("Could not load the research snapshot."));
   },[]);
 
