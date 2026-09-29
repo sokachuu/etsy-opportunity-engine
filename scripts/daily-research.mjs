@@ -1,3 +1,4 @@
+/* Rate-limit hardened Etsy scan: serialized requests with retry/backoff. */
 import fs from "node:fs/promises";
 import path from "node:path";
 import {analyzeOpportunity} from "../lib/opportunity-analysis.mjs";
