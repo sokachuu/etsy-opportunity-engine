@@ -16,6 +16,16 @@ const clamp=(n,a=0,b=100)=>Math.max(a,Math.min(b,n));
 const priceOf=l=>l?.price?.amount!=null&&l?.price?.divisor?l.price.amount/l.price.divisor:null;
 const ageOf=l=>l?.creation_timestamp?Math.max(1,(Date.now()-l.creation_timestamp*1000)/86400000):null;
 
+const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+const RETRIES=4;
+const REQUEST_GAP_MS=1200;
+
+function retryDelay(response,attempt){
+  const retryAfter=Number(response.headers.get("retry-after"));
+  if(Number.isFinite(retryAfter)&&retryAfter>0) return Math.min(retryAfter*1000,30000);
+  return Math.min(2000*Math.pow(2,attempt),30000);
+}
+
 function enrich(l,k,count){
   const age=ageOf(l), price=priceOf(l), fav=Math.max(0,l?.num_favorers??0);
   const velocity=age?fav/Math.max(1,age/30):0;
@@ -37,16 +47,47 @@ function enrich(l,k,count){
 
 async function search(k){
   const u=new URL("https://openapi.etsy.com/v3/application/listings/active");
-  u.searchParams.set("keywords",k);u.searchParams.set("limit","40");
+  u.searchParams.set("keywords",k);u.searchParams.set("limit","30");
   u.searchParams.set("sort_on","score");u.searchParams.set("sort_order","desc");
   u.searchParams.set("buyer_country","US");u.searchParams.set("is_safe","true");
-  const r=await fetch(u,{headers:{"x-api-key":API_KEY}});
-  if(!r.ok) throw new Error(`Etsy ${r.status} for ${k}`);
-  const d=await r.json();
-  return {keyword:k,count:d.count??0,results:(d.results??[]).map(x=>enrich(x,k,d.count??0))};
+
+  for(let attempt=0;attempt<=RETRIES;attempt++){
+    try{
+      const r=await fetch(u,{headers:{"x-api-key":API_KEY,"accept":"application/json"}});
+      if(r.ok){
+        const d=await r.json();
+        return {keyword:k,count:d.count??0,results:(d.results??[]).map(x=>enrich(x,k,d.count??0))};
+      }
+
+      const retryable=r.status===429||r.status===408||r.status>=500;
+      if(!retryable||attempt===RETRIES){
+        throw new Error(`Etsy ${r.status} for ${k}`);
+      }
+
+      const wait=retryDelay(r,attempt);
+      console.log(`Etsy ${r.status} for "${k}". Retrying in ${Math.ceil(wait/1000)}s (attempt ${attempt+1}/${RETRIES}).`);
+      await sleep(wait);
+    }catch(error){
+      if(attempt===RETRIES||!(error instanceof TypeError)){
+        throw error;
+      }
+      const wait=Math.min(2000*Math.pow(2,attempt),30000);
+      console.log(`Network error for "${k}". Retrying in ${Math.ceil(wait/1000)}s (attempt ${attempt+1}/${RETRIES}).`);
+      await sleep(wait);
+    }
+  }
+
+  throw new Error(`Search failed for ${k}`);
 }
 
-const results=await Promise.all(keywords.map(search));
+const results=[];
+for(let i=0;i<keywords.length;i++){
+  const keyword=keywords[i];
+  console.log(`Scanning ${i+1}/${keywords.length}: ${keyword}`);
+  results.push(await search(keyword));
+  if(i<keywords.length-1) await sleep(REQUEST_GAP_MS);
+}
+
 const top=results.flatMap(x=>x.results).sort((a,b)=>b.signalScore-a.signalScore).slice(0,60);
 const summaries=results.map(x=>{
   const p=x.results.map(r=>r.priceUsd).filter(v=>typeof v==="number").sort((a,b)=>a-b);
@@ -56,17 +97,19 @@ const summaries=results.map(x=>{
   return {keyword:x.keyword,marketCount:x.count,sampled:x.results.length,averagePrice:avg?Math.round(avg*100)/100:null,medianPrice:med?Math.round(med*100)/100:null,averageSignal:Math.round(avgScore),action:avgScore>=75?"TEST NOW":avgScore>=55?"WATCH":"SKIP"};
 }).sort((a,b)=>b.averageSignal-a.averageSignal);
 
+const analysis=analyzeOpportunity(top,summaries);
 const report={
   generatedAt:new Date().toISOString(),
   season:{name:"Halloween 2026",targetDate:"2026-10-31"},
   keywords,
   summaries,
   topSignals:top,
-  opportunityAnalysis:analyzeOpportunity(top,summaries),
-  designConcepts:generateDesignConcepts(analyzeOpportunity(top,summaries),top),
+  opportunityAnalysis:analysis,
+  designConcepts:generateDesignConcepts(analysis,top),
   notes:[
     "Public market-signal research only; no private competitor sales or conversion data is inferred.",
     "Official Etsy API only; no Etsy page scraping.",
+    "Requests are serialized with a gap and automatic retry/backoff for rate limits and transient API errors.",
     "Use the output to create original designs rather than copying listings."
   ]
 };
