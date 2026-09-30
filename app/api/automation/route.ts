@@ -11,8 +11,9 @@ function autoPublishEnabled() {
   return process.env.AUTO_PUBLISH_PRODUCTS === "true";
 }
 
-function cleanTags(tags) {
-  return [...new Set((tags || []).map(String).map(x => x.trim()).filter(Boolean))].slice(0, 13);
+function cleanTags(tags: unknown) {
+  const list = Array.isArray(tags) ? tags : [];
+  return [...new Set(list.map(String).map(x => x.trim()).filter(Boolean))].slice(0, 13);
 }
 
 function configured() {
