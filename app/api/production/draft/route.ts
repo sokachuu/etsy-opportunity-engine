@@ -39,8 +39,7 @@ function descriptionFor(concept: Concept, keyword: string): string {
     `Bring an original ${cleanKeyword(keyword)}-inspired graphic to spooky season with the ${concept.name} Halloween T-Shirt.`,
     "", concept.visual, "", "PRODUCT DETAILS",
     "• Unisex Gildan Heavy Cotton T-Shirt",
-    "• DTG printed artwork",
-    "• Multiple garment colors", "• Sizes S–3XL",
+    "• DTG printed artwork", "• Multiple garment colors", "• Sizes S–3XL",
     "• Original independent artwork", "", "CARE",
     "• Machine wash cold", "• Wash inside out", "• Mild detergent",
     "• Tumble dry low or hang dry", "• Do not iron directly over the print", "",
@@ -50,9 +49,9 @@ function descriptionFor(concept: Concept, keyword: string): string {
 
 function tagsFor(concept: Concept, keyword: string): string[] {
   return [...new Set([
-    keyword, "halloween shirt", "spooky shirt", "fall shirt",
-    "halloween gift", "spooky season", "vintage halloween",
-    "graphic tee", "autumn shirt", "halloween tee", concept.name
+    keyword, "halloween shirt", "spooky shirt", "fall shirt", "halloween gift",
+    "spooky season", "vintage halloween", "graphic tee", "autumn shirt",
+    "halloween tee", concept.name
   ].map(x => x.trim().toLowerCase()).filter(Boolean))].slice(0, 13);
 }
 
@@ -60,18 +59,21 @@ function optionValue(variant: Record<string, unknown>, key: string): string {
   const options = variant.options;
   if (options && typeof options === "object") {
     const value = (options as Record<string, unknown>)[key];
-    if (typeof value === "string") return value;
+    if (typeof value === "string") return value.trim();
   }
   return "";
 }
 
 function matchesTarget(variant: Record<string, unknown>): boolean {
-  const options = variant.options as Record<string, unknown> | undefined;
   const color = optionValue(variant, "color");
   const size = optionValue(variant, "size");
   const title = String(variant.title || "");
-  const colorMatch = color || TARGET_COLORS.find(c => new RegExp(`\\b${c.replace("+", "\\+") }\\b`, "i").test(title)) || "";
-  const sizeMatch = size || TARGET_SIZES.find(s => new RegExp(`(^|[ /-])${s.replace("2XL", "2XL").replace("3XL", "3XL")}(?=$|[ /-])`, "i").test(title)) || "";
+  const parts = title.split("/").map(x => x.trim());
+  const fallbackColor = parts[0] || "";
+  const fallbackSize = parts[parts.length - 1] || "";
+  const colorMatch = color || fallbackColor;
+  const sizeMatch = size || fallbackSize;
+
   return TARGET_COLORS.some(c => c.toLowerCase() === colorMatch.toLowerCase()) &&
     TARGET_SIZES.some(s => s.toLowerCase() === sizeMatch.toLowerCase()) &&
     variant.id != null;
@@ -93,6 +95,7 @@ export async function POST(req: NextRequest) {
   if (!artworkBase64) {
     return NextResponse.json({ok: false, error: "Upload a PNG or JPG artwork first."}, {status: 400});
   }
+
   const rawBase64 = artworkBase64.replace(/^data:image\/(png|jpe?g);base64,/i, "");
   if (rawBase64.length > 11000000) {
     return NextResponse.json({ok: false, error: "Artwork is too large. Use a print-ready PNG/JPG under about 8 MB."}, {status: 413});
@@ -111,11 +114,17 @@ export async function POST(req: NextRequest) {
     const keyword = concept.keyword || keywords[index % keywords.length];
 
     const shops = await listShops();
-    const shopId = Number(process.env.PRINTIFY_SHOP_ID || shops.find(x => /etsy/i.test(String(x.sales_channel || "")))?.id || 0);
+    const shopId = Number(
+      process.env.PRINTIFY_SHOP_ID ||
+      shops.find(x => /etsy/i.test(String(x.sales_channel || "")))?.id ||
+      0
+    );
     if (!shopId) throw new Error("No Printify Etsy shop found. Connect the Etsy shop in Printify or set PRINTIFY_SHOP_ID.");
 
     const blueprints = await getBlueprints();
-    const blueprint = blueprints.find(x => /gildan/i.test(String(x.brand || "")) && /5000/.test(String(x.model || "")));
+    const blueprint = blueprints.find(x =>
+      /gildan/i.test(String(x.brand || "")) && /5000/.test(String(x.model || ""))
+    );
     if (!blueprint) throw new Error("Gildan 5000 was not found in the Printify catalog.");
 
     const providers = await getProviders(blueprint.id);
@@ -125,7 +134,7 @@ export async function POST(req: NextRequest) {
     const catalogVariants = await getVariants(blueprint.id, provider.id);
     const selected = catalogVariants
       .filter(v => matchesTarget(v as unknown as Record<string, unknown>))
-      .map(v => ({id: v.id, price: 27, isEnabled: true}));
+      .map(v => ({id: v.id, price: 27}));
 
     if (!selected.length) {
       throw new Error("No matching Black/Natural/Sand/Forest Green S–3XL variants were found.");
@@ -133,6 +142,7 @@ export async function POST(req: NextRequest) {
 
     const uploaded = await uploadImageByBase64(fileName, rawBase64);
     const variantIds = selected.map(v => v.id);
+
     const product = await createProduct(shopId, {
       title: titleFor(concept, keyword),
       description: descriptionFor(concept, keyword),
