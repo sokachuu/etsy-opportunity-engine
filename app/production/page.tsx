@@ -31,7 +31,7 @@ export default function ProductionPage(){
       setDraftStatus(s=>({...s,[product.rank]:"Choose a PNG or JPG artwork first."}));
       return;
     }
-    if(!/^image\\/(png|jpe?g)$/i.test(file.type)){
+    if(file.type!=="image/png" && file.type!=="image/jpeg"){
       setDraftStatus(s=>({...s,[product.rank]:"Only PNG or JPG artwork is accepted."}));
       return;
     }
@@ -86,7 +86,7 @@ export default function ProductionPage(){
         <div style={{fontSize:12,opacity:.55}}>#{p.rank} · {p.keyword}</div>
         <h2 style={{fontSize:21,margin:"7px 0"}}>{p.name}</h2>
         <div style={{fontSize:14,opacity:.78,lineHeight:1.5}}>{p.title}</div>
-        <div style={{marginTop:14,fontSize:24,fontWeight:700}}>{"$"}{p.priceUsd.toFixed(2)}</div>
+        <div style={{marginTop:14,fontSize:24,fontWeight:700}>{"$"}{p.priceUsd.toFixed(2)}</div>
         <div style={{marginTop:12,fontSize:12}}><b>Garment:</b> {p.garment.blueprint} · {p.garment.sizes.join(", ")}</div>
         <div style={{marginTop:8,fontSize:12}}><b>Colors:</b> {p.garment.colors.join(", ")}</div>
 
