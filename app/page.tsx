@@ -152,6 +152,22 @@ export default function Page(){
       </div>
     </section>
 
+    <section className="panel">
+      <div className="head">
+        <div><span className="kicker">09 · PUBLISH AUTOMATION</span><h2>Printify → Etsy automation</h2></div>
+        <button onClick={async()=>{const r=await fetch("/api/automation",{cache:"no-store"});const d=await r.json();alert(d.connected?("Printify connected · Shop: "+(d.shopId||"auto-detect")+" · Auto-publish: "+(d.autoPublish?"ON":"OFF")):("Printify not connected: "+(d.message||"missing configuration")));}}>Check connection</button>
+      </div>
+      <div className="decision">
+        <b>Target workflow</b>
+        <span>1. Research engine finds an opportunity</span>
+        <span>2. Design package supplies an original artwork URL</span>
+        <span>3. Printify API uploads artwork and creates the product</span>
+        <span>4. Variants and price are applied automatically</span>
+        <span>5. Printify publishes to the connected Etsy sales channel when the safety gate is enabled</span>
+      </div>
+      <p className="note"><b>Current state:</b> the API layer is now in the repository. It is deliberately locked until the Printify token is configured and <code>AUTO_PUBLISH_PRODUCTS=true</code> is explicitly enabled after a test product.</p>
+    </section>
+
     <footer><span>Etsy Opportunity Engine · research MVP</span><span>Official APIs · no Etsy page scraping · US buyer market</span></footer>
   </main>;
 }
