@@ -50,3 +50,17 @@ The workflow serializes Etsy requests and retries transient 429/408/5xx response
 The dashboard reads the saved snapshot first, so the core research view remains usable even when a live server-side API key is not present.
 
 Repository: https://github.com/sokachuu/etsy-opportunity-engine
+
+
+## Publish automation
+
+The project now contains a Printify automation layer:
+
+- `/api/automation` checks the Printify connection and creates products from a structured product payload.
+- Artwork can be uploaded to the Printify Media Library from a URL.
+- Product creation supports blueprint/provider/variant selection, pricing, tags, and front-print positioning.
+- Publishing is explicitly gated by `AUTO_PUBLISH_PRODUCTS=true`.
+- `/api/printify/bootstrap` discovers the connected shops and the Gildan 5000 catalog/provider/variant data.
+- `data/publish-queue.json` is reserved for the future fully automated queue.
+
+Printify's API supports shop discovery, product creation, media uploads and publishing; when the Printify shop is connected to Etsy, the sales-channel publication flow can be triggered through Printify. The official API documentation should be treated as the source of truth for current endpoint behavior.
