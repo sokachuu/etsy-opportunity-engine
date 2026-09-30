@@ -61,6 +61,8 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json().catch(() => null);
   const products = Array.isArray(body?.products) ? body.products : body ? [body] : [];
+  // Only structured, user-approved product payloads are accepted here.
+  // The research engine does not silently publish market references.
   if (!products.length) {
     return NextResponse.json({error: "No products supplied"}, {status: 400});
   }
