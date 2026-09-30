@@ -22,6 +22,7 @@ export type PrintifyCatalogVariant = {
   id: number;
   title?: string;
   price?: number;
+  options?: Record<string, unknown>;
   [key: string]: unknown;
 };
 
@@ -70,6 +71,7 @@ export function getBlueprints(): Promise<PrintifyBlueprint[]>;
 export function getProviders(blueprintId: number | string): Promise<PrintifyProvider[]>;
 export function getVariants(blueprintId: number | string, providerId: number | string): Promise<PrintifyCatalogVariant[]>;
 export function uploadImageByUrl(fileName: string, url: string): Promise<{id: string; [key: string]: unknown}>;
+export function uploadImageByBase64(fileName: string, contents: string): Promise<{id: string; [key: string]: unknown}>;
 export function createProduct(shopId: number | string, product: PrintifyProductPayload): Promise<{id: string; [key: string]: unknown}>;
 export function publishProduct(shopId: number | string, productId: number | string): Promise<unknown>;
 export function buildProductPayload(input: PrintifyProductInput, uploadedImageId: string): PrintifyProductPayload;
