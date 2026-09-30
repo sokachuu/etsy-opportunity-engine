@@ -4,6 +4,27 @@ export type PrintifyShop = {
   sales_channel?: string;
 };
 
+export type PrintifyBlueprint = {
+  id: number;
+  brand?: string;
+  model?: string;
+  title?: string;
+  [key: string]: unknown;
+};
+
+export type PrintifyProvider = {
+  id: number;
+  title?: string;
+  [key: string]: unknown;
+};
+
+export type PrintifyCatalogVariant = {
+  id: number;
+  title?: string;
+  price?: number;
+  [key: string]: unknown;
+};
+
 export type PrintifyVariantInput = {
   id: number | string;
   price: number | string;
@@ -45,9 +66,9 @@ export type PrintifyProductPayload = {
 };
 
 export function listShops(): Promise<PrintifyShop[]>;
-export function getBlueprints(): Promise<unknown>;
-export function getProviders(blueprintId: number | string): Promise<unknown>;
-export function getVariants(blueprintId: number | string, providerId: number | string): Promise<unknown>;
+export function getBlueprints(): Promise<PrintifyBlueprint[]>;
+export function getProviders(blueprintId: number | string): Promise<PrintifyProvider[]>;
+export function getVariants(blueprintId: number | string, providerId: number | string): Promise<PrintifyCatalogVariant[]>;
 export function uploadImageByUrl(fileName: string, url: string): Promise<{id: string; [key: string]: unknown}>;
 export function createProduct(shopId: number | string, product: PrintifyProductPayload): Promise<{id: string; [key: string]: unknown}>;
 export function publishProduct(shopId: number | string, productId: number | string): Promise<unknown>;
